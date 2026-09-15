@@ -1,0 +1,1158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An interactive quiz for practising logic gate expressions.">
+  <title>Logic Lab Quiz</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17233c;
+      --muted: #64708a;
+      --paper: #fffdf8;
+      --cream: #f6f0e3;
+      --blue: #3157d5;
+      --blue-dark: #203da3;
+      --yellow: #f4c95d;
+      --green: #168467;
+      --green-soft: #e3f7ef;
+      --red: #c4484f;
+      --red-soft: #fcebed;
+      --line: #d8deec;
+      --shadow: 0 24px 70px rgba(28, 43, 83, 0.13);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 10%, rgba(244, 201, 93, 0.24), transparent 25rem),
+        radial-gradient(circle at 90% 85%, rgba(49, 87, 213, 0.15), transparent 28rem),
+        var(--cream);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page-shell {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 48px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 26px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      font-weight: 850;
+      letter-spacing: -0.03em;
+      font-size: 1.2rem;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border-radius: 14px;
+      color: white;
+      background: var(--blue);
+      box-shadow: 0 8px 18px rgba(49, 87, 213, 0.28);
+    }
+
+    .brand-mark svg {
+      width: 25px;
+      height: 25px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+    }
+
+    .stat {
+      min-width: 92px;
+      padding: 9px 15px;
+      border: 1px solid rgba(23, 35, 60, 0.08);
+      border-radius: 14px;
+      background: rgba(255, 253, 248, 0.72);
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-label {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      font-size: 1.05rem;
+    }
+
+    .quiz-card {
+      overflow: hidden;
+      border: 1px solid rgba(23, 35, 60, 0.08);
+      border-radius: 30px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .quiz-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+    }
+
+    .circuit-panel {
+      position: relative;
+      min-height: 520px;
+      padding: 36px;
+      background:
+        linear-gradient(rgba(49, 87, 213, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(49, 87, 213, 0.045) 1px, transparent 1px),
+        #f8faff;
+      background-size: 28px 28px;
+      border-right: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 13px;
+      color: var(--blue);
+      font-size: 0.73rem;
+      font-weight: 850;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 20px;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--yellow);
+      content: "";
+    }
+
+    h1 {
+      max-width: 520px;
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      line-height: 1.03;
+    }
+
+    .prompt-copy {
+      max-width: 520px;
+      margin: 14px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .diagram-wrap {
+      display: grid;
+      min-height: 290px;
+      margin-top: 24px;
+      place-items: center;
+      border: 1px solid rgba(49, 87, 213, 0.12);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: inset 0 1px 0 white;
+    }
+
+    #circuit {
+      display: block;
+      width: 100%;
+      height: 290px;
+    }
+
+    .answer-panel {
+      display: flex;
+      flex-direction: column;
+      padding: 36px;
+    }
+
+    .question-count {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .progress-track {
+      overflow: hidden;
+      height: 7px;
+      margin-bottom: 30px;
+      border-radius: 999px;
+      background: #e8ebf3;
+    }
+
+    .progress-bar {
+      width: 10%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--yellow), #f0ab55);
+      transition: width 260ms ease;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.65rem;
+      letter-spacing: -0.025em;
+    }
+
+    .helper-text {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .choices {
+      display: grid;
+      gap: 12px;
+    }
+
+    .choice {
+      display: grid;
+      grid-template-columns: 34px 1fr 22px;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-height: 64px;
+      padding: 11px 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 15px;
+      color: var(--ink);
+      background: white;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .choice:hover:not(:disabled) {
+      border-color: var(--blue);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(49, 87, 213, 0.1);
+    }
+
+    .choice:focus-visible,
+    .next-button:focus-visible {
+      outline: 3px solid rgba(49, 87, 213, 0.28);
+      outline-offset: 3px;
+    }
+
+    .choice:disabled {
+      cursor: default;
+    }
+
+    .choice-key {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border-radius: 9px;
+      color: var(--blue);
+      background: #eef1fc;
+      font-size: 0.8rem;
+      font-weight: 850;
+    }
+
+    .choice-expression {
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-size: 1.15rem;
+      font-weight: 650;
+    }
+
+    .logic-not {
+      text-decoration-line: overline;
+      text-decoration-thickness: 1.5px;
+      text-decoration-skip-ink: none;
+    }
+
+    .choice-status {
+      font-size: 1.15rem;
+      font-weight: 900;
+      opacity: 0;
+    }
+
+    .choice.correct {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .choice.correct .choice-key {
+      color: white;
+      background: var(--green);
+    }
+
+    .choice.correct .choice-status {
+      color: var(--green);
+      opacity: 1;
+    }
+
+    .choice.incorrect {
+      border-color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .choice.incorrect .choice-key {
+      color: white;
+      background: var(--red);
+    }
+
+    .choice.incorrect .choice-status {
+      color: var(--red);
+      opacity: 1;
+    }
+
+    .feedback {
+      min-height: 58px;
+      margin-top: 18px;
+      padding: 13px 15px;
+      border-radius: 14px;
+      background: #f4f6fa;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .feedback.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .feedback strong {
+      color: var(--ink);
+    }
+
+    .next-button {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 10px;
+      border: 0;
+      border-radius: 13px;
+      color: white;
+      background: var(--blue);
+      box-shadow: 0 9px 18px rgba(49, 87, 213, 0.22);
+      cursor: pointer;
+      font-weight: 800;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(5px);
+      transition: background 160ms ease, opacity 180ms ease, transform 180ms ease;
+    }
+
+    .next-button:hover {
+      background: var(--blue-dark);
+    }
+
+    .next-button.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .expression-card {
+      margin: 0 0 22px;
+      padding: 20px 18px;
+      border: 1.5px solid var(--line);
+      border-radius: 16px;
+      background: #f8faff;
+      text-align: center;
+    }
+
+    .expression-label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 850;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .target-expression {
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+    }
+
+    .gate-palette {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .gate-tile {
+      min-height: 88px;
+      padding: 10px 6px 8px;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      color: var(--ink);
+      background: white;
+      cursor: grab;
+      font-weight: 800;
+      transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .gate-tile:hover {
+      border-color: var(--blue);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(49, 87, 213, 0.12);
+    }
+
+    .gate-tile:active {
+      cursor: grabbing;
+    }
+
+    .gate-tile svg {
+      display: block;
+      width: 82px;
+      height: 52px;
+      margin: 0 auto 5px;
+    }
+
+    .gate-tile small {
+      display: block;
+      color: var(--muted);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .drop-zone {
+      fill: rgba(244, 201, 93, 0.2);
+      stroke: #dba82e;
+      stroke-width: 2.5;
+      stroke-dasharray: 7 5;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .drop-zone.active {
+      fill: rgba(49, 87, 213, 0.18);
+      stroke: var(--blue);
+    }
+
+    .drop-zone.correct {
+      fill: rgba(22, 132, 103, 0.2);
+      stroke: var(--green);
+      stroke-dasharray: none;
+    }
+
+    .drop-zone.incorrect {
+      fill: rgba(196, 72, 79, 0.15);
+      stroke: var(--red);
+    }
+
+    .drop-zone-label {
+      fill: #9a741b;
+      font-family: Inter, sans-serif;
+      font-size: 11px;
+      font-weight: 850;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    .drop-zone.correct + .drop-zone-label {
+      fill: var(--green);
+    }
+
+    .builder-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .check-button,
+    .skip-button {
+      min-height: 50px;
+      border-radius: 13px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .check-button {
+      border: 0;
+      color: white;
+      background: var(--blue);
+      box-shadow: 0 9px 18px rgba(49, 87, 213, 0.22);
+    }
+
+    .check-button:hover {
+      background: var(--blue-dark);
+    }
+
+    .skip-button {
+      border: 1.5px solid var(--line);
+      color: var(--ink);
+      background: white;
+    }
+
+    .skip-button:hover {
+      border-color: var(--blue);
+    }
+
+    .next-button.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 19px 36px;
+      border-top: 1px solid var(--line);
+      background: #fffdfa;
+    }
+
+    .legend-title {
+      margin-right: 4px;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 850;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      font-size: 0.82rem;
+      font-weight: 750;
+    }
+
+    .symbol {
+      display: grid;
+      min-width: 29px;
+      height: 29px;
+      padding: 0 6px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      font-family: "Cambria Math", Cambria, serif;
+      font-size: 1rem;
+    }
+
+    .overbar-demo {
+      text-decoration: overline;
+    }
+
+    .gate-shape {
+      fill: #eef2ff;
+      stroke: #3157d5;
+      stroke-width: 2.6;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .gate-line {
+      fill: none;
+      stroke: #5f6d8a;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .input-label,
+    .output-label {
+      fill: #17233c;
+      font-family: "Cambria Math", Cambria, serif;
+      font-size: 15px;
+      font-weight: 700;
+      dominant-baseline: central;
+    }
+
+    @media (max-width: 850px) {
+      .quiz-top {
+        grid-template-columns: 1fr;
+      }
+
+      .circuit-panel {
+        min-height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .answer-panel {
+        min-height: 550px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .page-shell {
+        width: min(100% - 18px, 1120px);
+        padding-top: 14px;
+      }
+
+      header {
+        align-items: flex-start;
+        margin-bottom: 14px;
+      }
+
+      .stats {
+        gap: 6px;
+      }
+
+      .stat {
+        min-width: 69px;
+        padding: 8px 9px;
+      }
+
+      .stat-label {
+        font-size: 0.58rem;
+      }
+
+      .quiz-card {
+        border-radius: 22px;
+      }
+
+      .circuit-panel,
+      .answer-panel {
+        padding: 25px 20px;
+      }
+
+      .diagram-wrap {
+        min-height: 250px;
+      }
+
+      #circuit {
+        height: 250px;
+      }
+
+      .legend {
+        flex-wrap: wrap;
+        gap: 12px 18px;
+        padding: 17px 20px;
+      }
+
+      .legend-title {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <header>
+      <div class="brand" aria-label="Logic Lab">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 28 28">
+            <path d="M4 7h5m10 0h5M4 21h5m10 0h5M9 3v22l10-4V7L9 3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        Logic Lab
+      </div>
+      <div class="stats" aria-live="polite">
+        <div class="stat">
+          <span class="stat-label">Score</span>
+          <strong><span id="score">0</span>/<span id="answered">0</span></strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Streak</span>
+          <strong><span id="streak">0</span> 🔥</strong>
+        </div>
+      </div>
+    </header>
+
+    <section class="quiz-card" aria-labelledby="page-title">
+      <div class="quiz-top">
+        <div class="circuit-panel">
+          <p class="eyebrow">Circuit challenge</p>
+          <h1 id="page-title">GCSE Logic Circuits</h1>
+          <p class="prompt-copy">Use the expression to rebuild the missing circuit gates. Drag each gate into the matching drop zone.</p>
+          <div class="diagram-wrap">
+            <svg id="circuit" viewBox="0 0 560 290" role="img" aria-label="A randomly generated logic circuit"></svg>
+          </div>
+        </div>
+
+        <div class="answer-panel">
+          <div class="question-count">
+            <span id="question-number">Question 1</span>
+            <span>Keep going</span>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div id="progress" class="progress-bar"></div>
+          </div>
+          <h2>Build the circuit</h2>
+          <p class="helper-text">Drag the correct gate from the palette into every highlighted position.</p>
+          <div class="expression-card">
+            <span class="expression-label">Expression at Q</span>
+            <div id="target-expression" class="target-expression"></div>
+          </div>
+          <div id="gate-palette" class="gate-palette" aria-label="Logic gate palette"></div>
+          <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+          <div class="builder-actions">
+            <button id="check-button" class="check-button" type="button">Check answer</button>
+            <button id="skip-button" class="skip-button" type="button">Skip</button>
+          </div>
+          <button id="next-button" class="next-button" type="button">Next circuit →</button>
+        </div>
+      </div>
+
+      <div class="legend" aria-label="Logic notation key">
+        <span class="legend-title">Notation key</span>
+        <span class="legend-item"><span class="symbol">.</span> AND</span>
+        <span class="legend-item"><span class="symbol">+</span> OR</span>
+        <span class="legend-item"><span class="symbol">⊕</span> XOR</span>
+        <span class="legend-item"><span class="symbol overbar-demo">A</span> NOT</span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    const binaryOperators = ["AND", "OR", "XOR"];
+    const operatorSymbols = { AND: ".", OR: "+", XOR: "⊕" };
+    const variables = ["A", "B", "C", "D"];
+    const state = {
+      question: 0,
+      score: 0,
+      answered: 0,
+      streak: 0,
+      locked: false,
+      currentTree: null,
+      placements: new Map(),
+      slots: []
+    };
+
+    const svg = document.getElementById("circuit");
+    const paletteElement = document.getElementById("gate-palette");
+    const expressionElement = document.getElementById("target-expression");
+    const feedbackElement = document.getElementById("feedback");
+    const checkButton = document.getElementById("check-button");
+    const skipButton = document.getElementById("skip-button");
+    const nextButton = document.getElementById("next-button");
+
+    function randomItem(items) {
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function shuffled(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function leaf(name, negated = false) {
+      return { type: "INPUT", name, negated };
+    }
+
+    function gate(type, left, right, negated = false) {
+      return { type, left, right, negated };
+    }
+
+    function makeCircuit() {
+      const names = shuffled(variables).slice(0, 3);
+      let nodes = names.map((name) => leaf(name, Math.random() < 0.2));
+
+      while (nodes.length > 1) {
+        const first = nodes.splice(Math.floor(Math.random() * nodes.length), 1)[0];
+        const second = nodes.splice(Math.floor(Math.random() * nodes.length), 1)[0];
+        const isFinalGate = nodes.length === 0;
+        nodes.push(gate(
+          randomItem(binaryOperators),
+          first,
+          second,
+          Math.random() < (isFinalGate ? 0.18 : 0.14)
+        ));
+      }
+
+      return nodes[0];
+    }
+
+    function precedence(node) {
+      if (node.type === "INPUT") return 4;
+      if (node.type === "AND") return 3;
+      if (node.type === "XOR") return 2;
+      return 1;
+    }
+
+    function withOverbar(text) {
+      return `<span class="logic-not">${text}</span>`;
+    }
+
+    function expression(node, parentPrecedence = 0) {
+      if (node.type === "INPUT") {
+        return node.negated ? withOverbar(node.name) : node.name;
+      }
+
+      const ownPrecedence = precedence(node);
+      const left = expression(node.left, ownPrecedence);
+      const right = expression(node.right, ownPrecedence);
+      let result = `${left}${operatorSymbols[node.type]}${right}`;
+
+      if (ownPrecedence < parentPrecedence) {
+        result = `(${result})`;
+      }
+      if (node.negated) {
+        result = withOverbar(`(${result})`);
+      }
+      return result;
+    }
+
+    function spokenExpression(markup) {
+      const template = document.createElement("template");
+      template.innerHTML = markup;
+
+      function describe(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          return node.textContent
+            .replaceAll(".", " AND ")
+            .replaceAll("+", " OR ")
+            .replaceAll("⊕", " XOR ");
+        }
+        const content = [...node.childNodes].map(describe).join("");
+        return node.classList?.contains("logic-not") ? `NOT (${content})` : content;
+      }
+
+      return [...template.content.childNodes].map(describe).join("").replace(/\s+/g, " ").trim();
+    }
+
+    function cloneTree(node) {
+      return JSON.parse(JSON.stringify(node));
+    }
+
+    function collectNodes(node, result = []) {
+      result.push(node);
+      if (node.type !== "INPUT") {
+        collectNodes(node.left, result);
+        collectNodes(node.right, result);
+      }
+      return result;
+    }
+
+    function createDistractors(tree, correct) {
+      const alternatives = new Set();
+      let attempts = 0;
+
+      while (alternatives.size < 3 && attempts < 80) {
+        attempts += 1;
+        const altered = cloneTree(tree);
+        const nodes = collectNodes(altered);
+        const target = randomItem(nodes);
+
+        if (target.type === "INPUT" || Math.random() < 0.35) {
+          target.negated = !target.negated;
+        } else {
+          target.type = randomItem(binaryOperators.filter((type) => type !== target.type));
+        }
+
+        const candidate = expression(altered);
+        if (candidate !== correct) alternatives.add(candidate);
+      }
+
+      return [...alternatives].slice(0, 3);
+    }
+
+    function svgElement(tag, attributes = {}, text = "") {
+      const element = document.createElementNS(SVG_NS, tag);
+      Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
+      if (text) element.textContent = text;
+      return element;
+    }
+
+    function pathData(type, x, y) {
+      if (type === "AND") {
+        return `M ${x - 23} ${y - 27} L ${x - 5} ${y - 27} A 27 27 0 0 1 ${x - 5} ${y + 27} L ${x - 23} ${y + 27} Z`;
+      }
+      if (type === "OR") {
+        return `M ${x - 25} ${y - 27} Q ${x - 8} ${y} ${x - 25} ${y + 27} Q ${x + 5} ${y + 27} ${x + 26} ${y} Q ${x + 5} ${y - 27} ${x - 25} ${y - 27} Z`;
+      }
+      return `M ${x - 18} ${y - 27} Q ${x - 2} ${y} ${x - 18} ${y + 27} M ${x - 25} ${y - 27} Q ${x - 9} ${y} ${x - 25} ${y + 27} M ${x - 18} ${y - 27} Q ${x + 6} ${y - 27} ${x + 27} ${y} Q ${x + 6} ${y + 27} ${x - 18} ${y + 27}`;
+    }
+
+    function drawInverter(x, y) {
+      svg.append(svgElement("path", {
+        d: `M ${x - 13} ${y - 18} L ${x - 13} ${y + 18} L ${x + 13} ${y} Z`,
+        class: "gate-shape"
+      }));
+      svg.append(svgElement("circle", {
+        cx: x + 19,
+        cy: y,
+        r: 6,
+        fill: "#fff",
+        stroke: "#3157d5",
+        "stroke-width": 2.4
+      }));
+      return x + 25;
+    }
+
+    function treeDepth(node) {
+      if (node.type === "INPUT") return 0;
+      return 1 + Math.max(treeDepth(node.left), treeDepth(node.right));
+    }
+
+    function inputNodes(node, result = []) {
+      if (node.type === "INPUT") {
+        result.push(node);
+      } else {
+        inputNodes(node.left, result);
+        inputNodes(node.right, result);
+      }
+      return result;
+    }
+
+    function addDropZone(id, x, y, kind, width = 68, height = 54) {
+      const zone = svgElement("rect", {
+        x: x - width / 2,
+        y: y - height / 2,
+        width,
+        height,
+        rx: 11,
+        class: "drop-zone",
+        "data-slot": id,
+        "data-kind": kind
+      });
+      zone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        zone.classList.add("active");
+      });
+      zone.addEventListener("dragleave", () => zone.classList.remove("active"));
+      zone.addEventListener("drop", (event) => {
+        event.preventDefault();
+        zone.classList.remove("active");
+        const value = event.dataTransfer.getData("text/plain");
+        state.placements.set(id, value);
+        zone.dataset.value = value;
+        zone.classList.remove("incorrect", "correct");
+        zone.nextElementSibling.textContent = "";
+        svg.querySelector(`[data-placed-gate="${id}"]`)?.remove();
+        const placedGate = svgElement("g", { "data-placed-gate": id, class: "placed-gate" });
+        const centerX = x;
+        if (value === "NOT") {
+          placedGate.append(svgElement("path", {
+            d: `M ${centerX - 18} ${y - 18} L ${centerX - 18} ${y + 18} L ${centerX + 8} ${y} Z`,
+            class: "gate-shape"
+          }));
+          placedGate.append(svgElement("circle", {
+            cx: centerX + 14,
+            cy: y,
+            r: 6,
+            fill: "#fff",
+            stroke: "#3157d5",
+            "stroke-width": 2.4
+          }));
+        } else {
+          placedGate.append(svgElement("path", {
+            d: pathData(value, centerX, y),
+            class: "gate-shape"
+          }));
+        }
+        svg.insertBefore(placedGate, zone.nextElementSibling);
+      });
+      svg.append(zone);
+      svg.append(svgElement("text", {
+        x,
+        y,
+        class: "drop-zone-label",
+        "data-label-for": id
+      }, "?"));
+      state.slots.push({ id, kind });
+    }
+
+    function renderCircuit(tree) {
+      svg.replaceChildren();
+      state.slots = [];
+      state.placements = new Map();
+      const leaves = inputNodes(tree);
+      const yPositions = new Map();
+      const step = 224 / Math.max(leaves.length - 1, 1);
+      leaves.forEach((node, index) => yPositions.set(node, 33 + index * step));
+      const maxDepth = treeDepth(tree);
+      const outputX = 440;
+      const gateSpacing = Math.min(160, (outputX - 105) / maxDepth);
+
+      function nodePosition(node, depthFromOutput = 0) {
+        if (node.type === "INPUT") return { x: 48, y: yPositions.get(node) };
+        const leftPosition = nodePosition(node.left, depthFromOutput + 1);
+        const rightPosition = nodePosition(node.right, depthFromOutput + 1);
+        return { x: outputX - depthFromOutput * gateSpacing, y: (leftPosition.y + rightPosition.y) / 2 };
+      }
+
+      function drawNode(node, depthFromOutput = 0) {
+        const position = nodePosition(node, depthFromOutput);
+        if (node.type === "INPUT") {
+          svg.append(svgElement("text", { x: 25, y: position.y, class: "input-label" }, node.name));
+          svg.append(svgElement("path", {
+            d: `M 42 ${position.y} H ${position.x + (node.negated ? 35 : 10)}`,
+            class: "gate-line"
+          }));
+          if (node.negated) {
+            addDropZone(`not-input-${node.name}`, position.x + 23, position.y, "NOT", 50, 48);
+            return { x: position.x + 48, y: position.y };
+          }
+          return { x: position.x + 10, y: position.y };
+        }
+
+        const leftOutput = drawNode(node.left, depthFromOutput + 1);
+        const rightOutput = drawNode(node.right, depthFromOutput + 1);
+        const inputX = position.x - 24;
+        svg.append(svgElement("path", {
+          d: `M ${leftOutput.x} ${leftOutput.y} H ${inputX - 13} V ${position.y - 14} H ${inputX}`,
+          class: "gate-line"
+        }));
+        svg.append(svgElement("path", {
+          d: `M ${rightOutput.x} ${rightOutput.y} H ${inputX - 7} V ${position.y + 14} H ${inputX}`,
+          class: "gate-line"
+        }));
+        addDropZone(`gate-${state.slots.length}`, position.x, position.y, node.type);
+        let outputStart = position.x + 27;
+        if (node.negated) {
+          svg.append(svgElement("path", {
+            d: `M ${outputStart} ${position.y} H ${outputStart + 8}`,
+            class: "gate-line"
+          }));
+          addDropZone(`not-gate-${state.slots.length}`, outputStart + 30, position.y, "NOT", 50, 48);
+          outputStart += 62;
+        }
+        return { x: outputStart, y: position.y };
+      }
+
+      const output = drawNode(tree);
+      svg.append(svgElement("path", { d: `M ${output.x} ${output.y} H 525`, class: "gate-line" }));
+      svg.append(svgElement("text", { x: 534, y: output.y, class: "output-label" }, "Q"));
+    }
+
+    function updateStats() {
+      document.getElementById("score").textContent = state.score;
+      document.getElementById("answered").textContent = state.answered;
+      document.getElementById("streak").textContent = state.streak;
+      document.getElementById("question-number").textContent = `Question ${state.question}`;
+      document.getElementById("progress").style.width = `${((state.question - 1) % 10 + 1) * 10}%`;
+    }
+
+    function gateIcon(type) {
+      const icon = document.createElementNS(SVG_NS, "svg");
+      icon.setAttribute("viewBox", "0 0 80 64");
+      icon.setAttribute("aria-hidden", "true");
+      icon.append(svgElement("path", { d: pathData(type, 40, 32), class: "gate-shape" }));
+      if (type === "NOT") {
+        icon.replaceChildren(svgElement("path", {
+          d: "M 20 14 L 20 50 L 51 32 Z",
+          class: "gate-shape"
+        }), svgElement("circle", {
+          cx: 57, cy: 32, r: 5, fill: "#fff", stroke: "#3157d5", "stroke-width": 2
+        }));
+      }
+      return icon;
+    }
+
+    function buildPalette() {
+      paletteElement.replaceChildren();
+      ["AND", "OR", "NOT", "XOR"].forEach((type) => {
+        const tile = document.createElement("button");
+        tile.type = "button";
+        tile.className = "gate-tile";
+        tile.draggable = true;
+        tile.dataset.gate = type;
+        tile.append(gateIcon(type));
+        const label = document.createElement("small");
+        label.textContent = type;
+        tile.append(label);
+        tile.addEventListener("dragstart", (event) => {
+          event.dataTransfer.setData("text/plain", type);
+          event.dataTransfer.effectAllowed = "copy";
+        });
+        paletteElement.append(tile);
+      });
+    }
+
+    function checkAnswer() {
+      if (state.locked) return;
+      const zones = [...svg.querySelectorAll(".drop-zone")];
+      const missing = zones.some((zone) => !zone.dataset.value);
+      const correct = !missing && state.slots.every((slot) => state.placements.get(slot.id) === slot.kind);
+      zones.forEach((zone) => {
+        const slot = state.slots.find((item) => item.id === zone.dataset.slot);
+        zone.classList.toggle("correct", state.placements.get(slot.id) === slot.kind);
+        zone.classList.toggle("incorrect", Boolean(state.placements.get(slot.id)) && state.placements.get(slot.id) !== slot.kind);
+      });
+      if (!correct) {
+        feedbackElement.innerHTML = missing
+          ? "<strong>Keep going.</strong> Fill every drop zone before checking."
+          : "<strong>Almost.</strong> Some gates do not match the expression.";
+        feedbackElement.classList.add("visible");
+        return;
+      }
+      state.locked = true;
+      state.answered += 1;
+      state.score += 1;
+      state.streak += 1;
+      feedbackElement.innerHTML = "<strong>Correct.</strong> You rebuilt the circuit.";
+      feedbackElement.classList.add("visible");
+      checkButton.disabled = true;
+      skipButton.disabled = true;
+      nextButton.classList.add("visible");
+      updateStats();
+    }
+
+    function newQuestion(countAsSkip = false) {
+      if (countAsSkip && !state.locked) {
+        state.answered += 1;
+        state.streak = 0;
+      }
+      state.question += 1;
+      state.locked = false;
+      state.currentTree = makeCircuit();
+      renderCircuit(state.currentTree);
+      expressionElement.innerHTML = expression(state.currentTree);
+      feedbackElement.classList.remove("visible");
+      feedbackElement.textContent = "";
+      nextButton.classList.remove("visible");
+      checkButton.disabled = false;
+      skipButton.disabled = false;
+      updateStats();
+    }
+
+    checkButton.addEventListener("click", checkAnswer);
+    skipButton.addEventListener("click", () => newQuestion(true));
+    nextButton.addEventListener("click", () => newQuestion());
+    buildPalette();
+    newQuestion();
+  </script>
+</body>
+</html>
