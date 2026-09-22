@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binary Conversion Trainer</title>
+<style>
+  :root {
+    --brand: #1f4e79;
+    --brand-light: #2e6da4;
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --border: #d9dee3;
+    --text: #2c3338;
+    --muted: #6b747c;
+    --success: #1e7e34;
+    --error: #b02a37;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  header {
+    background: var(--brand);
+    color: #fff;
+    padding: 20px 24px;
+    border-bottom: 3px solid var(--brand-light);
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  header p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #cdd9e5;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 24px auto;
+    padding: 0 16px;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  .panel h2 {
+    margin: 0 0 16px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+
+  .settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .setting-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .setting-group .label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .toggle-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .toggle-row button {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .toggle-row button:hover { border-color: var(--brand-light); }
+
+  .toggle-row button.active {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
+  }
+
+  .switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  .switch input { display: none; }
+
+  .switch .track {
+    width: 40px;
+    height: 22px;
+    background: #c4ccd4;
+    border-radius: 11px;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .switch .thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  .switch input:checked + .track { background: var(--brand); }
+  .switch input:checked + .track .thumb { transform: translateX(18px); }
+
+  .prompt {
+    text-align: center;
+    padding: 8px 0 4px;
+  }
+
+  .prompt .direction {
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  .prompt .value {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--brand);
+    font-family: "Consolas", "Courier New", monospace;
+    letter-spacing: 2px;
+  }
+
+  .place-values {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin: 16px 0 4px;
+    flex-wrap: wrap;
+  }
+
+  .place-values .cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 40px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    font-family: "Consolas", "Courier New", monospace;
+  }
+
+  .place-values .pv {
+    background: #eef2f6;
+    color: var(--muted);
+    font-size: 12px;
+    width: 100%;
+    text-align: center;
+    padding: 2px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .place-values .bit {
+    font-size: 20px;
+    font-weight: 700;
+    padding: 4px 0;
+    width: 100%;
+    text-align: center;
+    color: var(--brand);
+  }
+
+  .answer-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  #answer {
+    padding: 10px 14px;
+    font-size: 18px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    width: 220px;
+    text-align: center;
+    font-family: "Consolas", "Courier New", monospace;
+    letter-spacing: 1px;
+  }
+
+  #answer:focus {
+    outline: none;
+    border-color: var(--brand-light);
+    box-shadow: 0 0 0 2px rgba(46,109,164,0.15);
+  }
+
+  .btn-primary {
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .btn-primary:hover { background: var(--brand-light); }
+
+  .btn-secondary {
+    background: #fff;
+    color: var(--brand);
+    border: 1px solid var(--border);
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .btn-secondary:hover { border-color: var(--brand-light); }
+
+  .feedback {
+    text-align: center;
+    margin-top: 16px;
+    min-height: 22px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .feedback.correct { color: var(--success); }
+  .feedback.incorrect { color: var(--error); }
+  .feedback .hint { font-weight: 400; color: var(--muted); }
+
+  .stats {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat .num {
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .stat .num.correct { color: var(--success); }
+  .stat .num.incorrect { color: var(--error); }
+  .stat .num.rate { color: var(--brand); }
+
+  .stat .caption {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+
+  .footer-actions {
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 20px;
+  }
+
+  .hint-note {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Binary Conversion Trainer</h1>
+  <p>Practise converting between binary and decimal numbers</p>
+</header>
+
+<div class="container">
+  <div class="panel">
+    <h2>Options</h2>
+    <div class="settings">
+      <div class="setting-group">
+        <span class="label">Bit Width</span>
+        <div class="toggle-row" id="bitWidth">
+          <button data-bits="4">4-bit</button>
+          <button data-bits="8" class="active">8-bit</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <span class="label">Easy Mode</span>
+        <label class="switch">
+          <input type="checkbox" id="easyMode">
+          <span class="track"><span class="thumb"></span></span>
+          <span id="easyLabel">Off</span>
+        </label>
+      </div>
+    </div>
+    <p class="hint-note">Easy mode displays the place values above each binary digit.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Question</h2>
+    <div class="prompt">
+      <div class="direction" id="direction">Convert to decimal</div>
+      <div id="promptDisplay"></div>
+    </div>
+    <div class="answer-row">
+      <input type="text" id="answer" autocomplete="off" placeholder="Your answer">
+      <button class="btn-primary" id="submitBtn">Submit</button>
+      <button class="btn-secondary" id="skipBtn">Skip</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Score</h2>
+    <div class="stats">
+      <div class="stat">
+        <span class="num correct" id="correctCount">0</span>
+        <span class="caption">Correct</span>
+      </div>
+      <div class="stat">
+        <span class="num incorrect" id="incorrectCount">0</span>
+        <span class="caption">Incorrect</span>
+      </div>
+      <div class="stat">
+        <span class="num rate" id="accuracy">—</span>
+        <span class="caption">Accuracy</span>
+      </div>
+    </div>
+    <div class="footer-actions">
+      <button class="btn-secondary" id="resetBtn">Reset Score</button>
+    </div>
+  </div>
+</div>
+
+<footer>Binary Conversion Trainer &middot; A simple practice tool</footer>
+
+<script>
+(function () {
+  var state = {
+    bits: 8,
+    easy: false,
+    direction: "toDecimal", // or "toBinary"
+    value: 0,
+    correct: 0,
+    incorrect: 0
+  };
+
+  var el = {
+    bitWidth: document.getElementById("bitWidth"),
+    easyMode: document.getElementById("easyMode"),
+    easyLabel: document.getElementById("easyLabel"),
+    direction: document.getElementById("direction"),
+    promptDisplay: document.getElementById("promptDisplay"),
+    answer: document.getElementById("answer"),
+    submitBtn: document.getElementById("submitBtn"),
+    skipBtn: document.getElementById("skipBtn"),
+    feedback: document.getElementById("feedback"),
+    correctCount: document.getElementById("correctCount"),
+    incorrectCount: document.getElementById("incorrectCount"),
+    accuracy: document.getElementById("accuracy"),
+    resetBtn: document.getElementById("resetBtn")
+  };
+
+  function maxValue() {
+    return Math.pow(2, state.bits) - 1;
+  }
+
+  function toBinaryString(num) {
+    var s = num.toString(2);
+    while (s.length < state.bits) s = "0" + s;
+    return s;
+  }
+
+  function randomValue() {
+    return Math.floor(Math.random() * (maxValue() + 1));
+  }
+
+  function newQuestion() {
+    state.value = randomValue();
+    state.direction = Math.random() < 0.5 ? "toDecimal" : "toBinary";
+    el.answer.value = "";
+    el.feedback.textContent = "";
+    el.feedback.className = "feedback";
+    renderQuestion();
+    el.answer.focus();
+  }
+
+  function renderPlaceValues(binaryStr) {
+    var wrap = document.createElement("div");
+    wrap.className = "place-values";
+    for (var i = 0; i < binaryStr.length; i++) {
+      var place = Math.pow(2, binaryStr.length - 1 - i);
+      var cell = document.createElement("div");
+      cell.className = "cell";
+
+      var pv = document.createElement("span");
+      pv.className = "pv";
+      pv.textContent = place;
+
+      var bit = document.createElement("span");
+      bit.className = "bit";
+      bit.textContent = binaryStr.charAt(i);
+
+      cell.appendChild(pv);
+      cell.appendChild(bit);
+      wrap.appendChild(cell);
+    }
+    return wrap;
+  }
+
+  function renderQuestion() {
+    el.promptDisplay.innerHTML = "";
+
+    if (state.direction === "toDecimal") {
+      el.direction.textContent = "Convert this binary number to decimal";
+      var binaryStr = toBinaryString(state.value);
+
+      if (state.easy) {
+        el.promptDisplay.appendChild(renderPlaceValues(binaryStr));
+      } else {
+        var v = document.createElement("div");
+        v.className = "value";
+        v.textContent = binaryStr;
+        el.promptDisplay.appendChild(v);
+      }
+      el.answer.setAttribute("inputmode", "numeric");
+      el.answer.placeholder = "Decimal answer";
+    } else {
+      el.direction.textContent = "Convert this decimal number to binary (" + state.bits + "-bit)";
+      var d = document.createElement("div");
+      d.className = "value";
+      d.textContent = state.value;
+      el.promptDisplay.appendChild(d);
+
+      if (state.easy) {
+        // Show empty place-value scaffold as a hint.
+        var scaffold = document.createElement("div");
+        scaffold.className = "place-values";
+        for (var i = 0; i < state.bits; i++) {
+          var place = Math.pow(2, state.bits - 1 - i);
+          var cell = document.createElement("div");
+          cell.className = "cell";
+          var pv = document.createElement("span");
+          pv.className = "pv";
+          pv.textContent = place;
+          var bit = document.createElement("span");
+          bit.className = "bit";
+          bit.textContent = "?";
+          cell.appendChild(pv);
+          cell.appendChild(bit);
+          scaffold.appendChild(cell);
+        }
+        el.promptDisplay.appendChild(scaffold);
+      }
+      el.answer.setAttribute("inputmode", "numeric");
+      el.answer.placeholder = "Binary answer";
+    }
+  }
+
+  function updateStats() {
+    el.correctCount.textContent = state.correct;
+    el.incorrectCount.textContent = state.incorrect;
+    var total = state.correct + state.incorrect;
+    el.accuracy.textContent = total === 0 ? "—" : Math.round((state.correct / total) * 100) + "%";
+  }
+
+  function checkAnswer() {
+    var raw = el.answer.value.trim();
+    if (raw === "") {
+      el.feedback.textContent = "Please enter an answer.";
+      el.feedback.className = "feedback";
+      return;
+    }
+
+    var isCorrect = false;
+    var correctAnswer;
+
+    if (state.direction === "toDecimal") {
+      correctAnswer = String(state.value);
+      if (/^\d+$/.test(raw)) {
+        isCorrect = parseInt(raw, 10) === state.value;
+      }
+    } else {
+      correctAnswer = toBinaryString(state.value);
+      if (/^[01]+$/.test(raw)) {
+        // Compare numeric value so leading zeros don't matter.
+        isCorrect = parseInt(raw, 2) === state.value;
+      }
+    }
+
+    if (isCorrect) {
+      state.correct++;
+      el.feedback.innerHTML = "Correct.";
+      el.feedback.className = "feedback correct";
+      updateStats();
+      setTimeout(newQuestion, 700);
+    } else {
+      state.incorrect++;
+      el.feedback.innerHTML = "Incorrect. <span class='hint'>The answer was " + correctAnswer + ".</span>";
+      el.feedback.className = "feedback incorrect";
+      updateStats();
+      setTimeout(newQuestion, 1600);
+    }
+  }
+
+  // Event wiring
+  el.bitWidth.addEventListener("click", function (e) {
+    var btn = e.target.closest("button");
+    if (!btn) return;
+    var buttons = el.bitWidth.querySelectorAll("button");
+    for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove("active");
+    btn.classList.add("active");
+    state.bits = parseInt(btn.getAttribute("data-bits"), 10);
+    newQuestion();
+  });
+
+  el.easyMode.addEventListener("change", function () {
+    state.easy = el.easyMode.checked;
+    el.easyLabel.textContent = state.easy ? "On" : "Off";
+    renderQuestion();
+  });
+
+  el.submitBtn.addEventListener("click", checkAnswer);
+
+  el.answer.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") checkAnswer();
+  });
+
+  el.skipBtn.addEventListener("click", newQuestion);
+
+  el.resetBtn.addEventListener("click", function () {
+    state.correct = 0;
+    state.incorrect = 0;
+    updateStats();
+    newQuestion();
+  });
+
+  // Init
+  updateStats();
+  newQuestion();
+})();
+</script>
+</body>
+</html>
