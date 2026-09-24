@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Software Development Methodologies Quiz</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #1e293b;
+    color: #f1f5f9;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .card {
+    background: #334155;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 560px;
+    width: 100%;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
+  h1 {
+    font-size: 1.4em;
+    margin-top: 0;
+    text-align: center;
+  }
+  .methodology {
+    font-size: 2em;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0;
+    color: #f472b6;
+  }
+  .question {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #cbd5e1;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  button.option {
+    background: #475569;
+    color: #f1f5f9;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+  }
+  button.option:hover:not(:disabled) {
+    background: #64748b;
+  }
+  button.option.correct {
+    background: #16a34a !important;
+  }
+  button.option.wrong {
+    background: #dc2626 !important;
+  }
+  button.option:disabled {
+    cursor: default;
+  }
+  .feedback {
+    text-align: center;
+    min-height: 24px;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  .scoreboard {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 25px;
+    font-size: 1.1em;
+  }
+  .scoreboard span {
+    font-weight: bold;
+  }
+  .correct-score { color: #4ade80; }
+  .wrong-score { color: #f87171; }
+  #nextBtn {
+    display: block;
+    margin: 20px auto 0;
+    background: #ec4899;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+  }
+  #nextBtn:hover {
+    background: #db2777;
+  }
+  #nextBtn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Which description matches this software development methodology?</h1>
+  <div class="methodology" id="methodologyName"></div>
+  <div class="question">Choose the correct answer:</div>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback"></div>
+  <button id="nextBtn" disabled>Next Question</button>
+
+  <div class="scoreboard">
+    <div>Correct: <span class="correct-score" id="correctScore">0</span></div>
+    <div>Wrong: <span class="wrong-score" id="wrongScore">0</span></div>
+  </div>
+</div>
+
+<script>
+  const methodologies = [
+    { name: "Waterfall", answer: "Completes each development stage in a fixed sequence before moving to the next" },
+    { name: "Agile", answer: "Builds software in short cycles with frequent customer feedback and changing requirements" },
+    { name: "Iterative development", answer: "Creates an initial version, then repeatedly improves it using feedback" },
+    { name: "Rapid application development (RAD)", answer: "Uses fast prototyping and reusable components to deliver a system quickly" },
+    { name: "Prototyping", answer: "Builds an early model so users can evaluate ideas before the final system is made" },
+    { name: "Extreme programming (XP)", answer: "Uses practices such as pair programming, continuous testing, and frequent releases" },
+    { name: "Spiral model", answer: "Develops through repeated cycles that identify and reduce risks at each stage" },
+    { name: "Pair programming", answer: "Has two developers work together at one workstation, reviewing code as it is written" },
+    { name: "Test-driven development", answer: "Writes automated tests before writing the code needed to make them pass" },
+    { name: "Continuous integration", answer: "Frequently merges changes into a shared codebase and runs automated checks" },
+    { name: "Feasibility study", answer: "Assesses whether a proposed system is practical, affordable, and worth developing" },
+    { name: "Requirements analysis", answer: "Identifies and documents what users and stakeholders need a system to do" }
+  ];
+
+  const allAnswers = methodologies.map(methodology => methodology.answer);
+
+  let currentIndex = -1;
+  let correctCount = 0;
+  let wrongCount = 0;
+  let answered = false;
+
+  const methodologyNameEl = document.getElementById("methodologyName");
+  const optionsEl = document.getElementById("options");
+  const feedbackEl = document.getElementById("feedback");
+  const nextBtn = document.getElementById("nextBtn");
+  const correctScoreEl = document.getElementById("correctScore");
+  const wrongScoreEl = document.getElementById("wrongScore");
+
+  function shuffle(array) {
+    const shuffled = array.slice();
+    for (let index = shuffled.length - 1; index > 0; index--) {
+      const randomIndex = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+    }
+    return shuffled;
+  }
+
+  function pickNextMethodology() {
+    let index;
+    do {
+      index = Math.floor(Math.random() * methodologies.length);
+    } while (index === currentIndex && methodologies.length > 1);
+    currentIndex = index;
+    return methodologies[index];
+  }
+
+  function buildOptions(correctMethodology) {
+    const wrongPool = allAnswers.filter(answer => answer !== correctMethodology.answer);
+    const wrongChoices = shuffle(wrongPool).slice(0, 3);
+    return shuffle([correctMethodology.answer, ...wrongChoices]);
+  }
+
+  function loadQuestion() {
+    answered = false;
+    feedbackEl.textContent = "";
+    nextBtn.disabled = true;
+
+    const methodology = pickNextMethodology();
+    methodologyNameEl.textContent = methodology.name;
+    const options = buildOptions(methodology);
+    optionsEl.innerHTML = "";
+
+    options.forEach(optionText => {
+      const button = document.createElement("button");
+      button.className = "option";
+      button.textContent = optionText;
+      button.addEventListener("click", () => selectAnswer(button, optionText, methodology.answer));
+      optionsEl.appendChild(button);
+    });
+  }
+
+  function selectAnswer(button, chosenAnswer, correctAnswer) {
+    if (answered) return;
+    answered = true;
+
+    const allButtons = optionsEl.querySelectorAll("button.option");
+    allButtons.forEach(optionButton => {
+      optionButton.disabled = true;
+      if (optionButton.textContent === correctAnswer) {
+        optionButton.classList.add("correct");
+      }
+    });
+
+    if (chosenAnswer === correctAnswer) {
+      correctCount++;
+      correctScoreEl.textContent = correctCount;
+      feedbackEl.textContent = "Correct!";
+      feedbackEl.style.color = "#4ade80";
+    } else {
+      wrongCount++;
+      wrongScoreEl.textContent = wrongCount;
+      button.classList.add("wrong");
+      feedbackEl.textContent = "Wrong!";
+      feedbackEl.style.color = "#f87171";
+    }
+
+    nextBtn.disabled = false;
+  }
+
+  nextBtn.addEventListener("click", loadQuestion);
+  loadQuestion();
+</script>
+
+</body>
+</html>
