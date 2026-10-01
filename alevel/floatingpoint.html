@@ -1,0 +1,1649 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive A-level practice for signed binary, fixed-point numbers, two's complement, and binary arithmetic.">
+  <title>Binary &amp; Floating-Point Practice</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #667085;
+      --paper: #ffffff;
+      --canvas: #f3f6fb;
+      --navy: #172c57;
+      --blue: #3567d6;
+      --blue-soft: #eaf0ff;
+      --cyan: #56c7cf;
+      --green: #187a55;
+      --green-soft: #e7f7ef;
+      --red: #b8404a;
+      --red-soft: #fcebed;
+      --amber: #eebc52;
+      --line: #dce3ef;
+      --shadow: 0 22px 55px rgba(23, 44, 87, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 7% 2%, rgba(86, 199, 207, 0.18), transparent 24rem),
+        radial-gradient(circle at 94% 90%, rgba(53, 103, 214, 0.14), transparent 28rem),
+        var(--canvas);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .site-header {
+      color: white;
+      background: var(--navy);
+    }
+
+    .header-inner {
+      display: flex;
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 26px 0 22px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 48px;
+      height: 48px;
+      place-items: center;
+      border-radius: 15px;
+      color: var(--navy);
+      background: var(--cyan);
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 0.82rem;
+      font-weight: 900;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(1.1rem, 3vw, 1.45rem);
+      letter-spacing: -0.02em;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: #bfcce5;
+      font-size: 0.84rem;
+    }
+
+    .score {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      white-space: nowrap;
+    }
+
+    .score-label {
+      color: #bdc9e0;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .score strong {
+      font-size: 1.15rem;
+    }
+
+    .tab-bar-wrap {
+      overflow-x: auto;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      background: #102345;
+      scrollbar-width: thin;
+    }
+
+    .tab-bar {
+      display: flex;
+      width: min(1120px, calc(100% - 32px));
+      min-width: max-content;
+      margin: 0 auto;
+      gap: 3px;
+    }
+
+    .tab {
+      position: relative;
+      padding: 15px 17px;
+      border: 0;
+      color: #b9c6de;
+      background: transparent;
+      font-size: 0.84rem;
+      font-weight: 750;
+      transition: color 0.18s, background 0.18s;
+    }
+
+    .tab:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .tab[aria-selected="true"] {
+      color: white;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .tab[aria-selected="true"]::after {
+      position: absolute;
+      right: 12px;
+      bottom: 0;
+      left: 12px;
+      height: 3px;
+      border-radius: 3px 3px 0 0;
+      background: var(--cyan);
+      content: "";
+    }
+
+    .tab.coming-soon {
+      color: #7f8ba2;
+      cursor: default;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 34px 0 54px;
+    }
+
+    .workspace {
+      overflow: hidden;
+      border: 1px solid rgba(23, 44, 87, 0.09);
+      border-radius: 24px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .workspace-head {
+      display: flex;
+      padding: 28px 32px 24px;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(120deg, #fbfdff, #f4f8ff);
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--blue);
+      font-size: 0.71rem;
+      font-weight: 850;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .workspace-head h2 {
+      margin: 0;
+      font-size: clamp(1.45rem, 3vw, 2rem);
+      letter-spacing: -0.035em;
+    }
+
+    .description {
+      max-width: 680px;
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .switch {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #3f4b61;
+      background: white;
+      font-size: 0.78rem;
+      font-weight: 750;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .switch input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .track {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      border-radius: 999px;
+      background: #bac3d1;
+      pointer-events: none;
+      transition: background 0.2s;
+    }
+
+    .track::after {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s;
+      content: "";
+    }
+
+    .switch input:checked + .track {
+      background: var(--blue);
+    }
+
+    .switch input:checked + .track::after {
+      transform: translateX(16px);
+    }
+
+    .switch input:focus-visible + .track {
+      outline: 3px solid rgba(53, 103, 214, 0.28);
+      outline-offset: 2px;
+    }
+
+    .operation-options {
+      display: flex;
+      flex: 0 0 auto;
+      padding: 4px;
+      gap: 3px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+    }
+
+    .operation-option {
+      padding: 7px 11px;
+      border: 0;
+      border-radius: 8px;
+      color: var(--muted);
+      background: transparent;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .operation-option:hover {
+      color: var(--navy);
+      background: #f1f4f9;
+    }
+
+    .operation-option[aria-pressed="true"] {
+      color: white;
+      background: var(--blue);
+    }
+
+    .mask-options {
+      display: flex;
+      flex: 0 0 auto;
+      padding: 4px;
+      gap: 3px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+    }
+
+    .quiz-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+      min-height: 430px;
+    }
+
+    .question-side {
+      display: flex;
+      padding: 40px 32px;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid var(--line);
+      background:
+        linear-gradient(rgba(53, 103, 214, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(53, 103, 214, 0.035) 1px, transparent 1px),
+        #fbfcff;
+      background-size: 24px 24px;
+    }
+
+    .question-content {
+      width: 100%;
+      max-width: 650px;
+      text-align: center;
+    }
+
+    .question-label {
+      margin: 0 0 13px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 850;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .question-text {
+      margin: 0;
+      font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+      font-weight: 720;
+      line-height: 1.45;
+    }
+
+    .question-value {
+      margin: 22px 0 20px;
+      color: var(--navy);
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: clamp(2.2rem, 7vw, 4rem);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      line-height: 1.05;
+      overflow-wrap: anywhere;
+    }
+
+    .question-value .point {
+      color: var(--blue);
+    }
+
+    .place-grid {
+      display: grid;
+      max-width: 610px;
+      margin: 0 auto;
+      grid-template-columns: repeat(8, minmax(34px, 1fr));
+      gap: 6px;
+    }
+
+    .place-grid.hide-place-values .place-label {
+      display: none;
+    }
+
+    .place-grid.fixed-point-grid {
+      grid-template-columns: repeat(5, minmax(34px, 1fr)) 12px repeat(3, minmax(34px, 1fr));
+    }
+
+    .place-cell {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+
+    .place-label {
+      display: block;
+      padding: 5px 2px;
+      color: var(--muted);
+      background: #edf2f9;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 0.69rem;
+      font-weight: 750;
+    }
+
+    .place-bit {
+      display: block;
+      min-height: 39px;
+      padding: 6px 2px;
+      color: var(--navy);
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 1.25rem;
+      font-weight: 850;
+    }
+
+    .bit-input {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      height: 42px;
+      padding: 4px 1px;
+      border: 0;
+      border-radius: 0;
+      color: var(--navy);
+      background: white;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 1.3rem;
+      font-weight: 850;
+      text-align: center;
+    }
+
+    .bit-input:focus {
+      position: relative;
+      z-index: 1;
+      outline: 3px solid rgba(53, 103, 214, 0.32);
+      outline-offset: -3px;
+      background: var(--blue-soft);
+    }
+
+    .bit-input:disabled {
+      color: var(--navy);
+      background: #f3f6fa;
+      opacity: 1;
+    }
+
+    .binary-point {
+      border-right: 3px solid var(--blue);
+    }
+
+    .arithmetic-workspace {
+      display: grid;
+      width: min(100%, 520px);
+      margin: 22px auto 18px;
+      grid-template-columns: 28px repeat(8, minmax(30px, 1fr));
+      gap: 5px;
+      color: var(--navy);
+      font-family: "Consolas", "Courier New", monospace;
+    }
+
+    .arithmetic-label {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      color: var(--muted);
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .arithmetic-symbol,
+    .arithmetic-bit {
+      display: grid;
+      height: 38px;
+      place-items: center;
+      font-size: 1.35rem;
+      font-weight: 850;
+    }
+
+    .carry-input {
+      height: 30px;
+      border: 1px dashed #a9b5c8;
+      border-radius: 6px;
+      color: var(--blue);
+      background: #f6f8fc;
+      font-size: 0.92rem;
+    }
+
+    .arithmetic-rule {
+      height: 2px;
+      margin: 1px 0 3px;
+      border-radius: 2px;
+      background: var(--navy);
+    }
+
+    .arithmetic-answer,
+    .normalisation-answer {
+      height: 40px;
+      border: 1.5px solid #b9c6d9;
+      border-radius: 7px;
+      box-shadow: inset 0 -2px 0 rgba(23, 44, 87, 0.06);
+    }
+
+    .masking-workspace {
+      display: grid;
+      width: min(100%, 540px);
+      margin: 22px auto 18px;
+      grid-template-columns: 44px repeat(8, minmax(30px, 1fr));
+      gap: 5px;
+      color: var(--navy);
+      font-family: "Consolas", "Courier New", monospace;
+    }
+
+    .mask-operator {
+      display: grid;
+      height: 38px;
+      place-items: center;
+      color: var(--blue);
+      font-size: 0.78rem;
+      font-weight: 900;
+    }
+
+    .normalisation-workspace {
+      width: min(100%, 600px);
+      margin: 22px auto 18px;
+    }
+
+    .float-number {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(130px, 1fr);
+      gap: 18px;
+      align-items: end;
+    }
+
+    .float-group-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 850;
+      letter-spacing: 0.09em;
+      text-align: left;
+      text-transform: uppercase;
+    }
+
+    .float-bits {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(28px, 1fr));
+      gap: 4px;
+    }
+
+    .float-bits.mantissa {
+      grid-template-columns: minmax(28px, 1fr) 12px repeat(7, minmax(28px, 1fr));
+    }
+
+    .float-bits.exponent {
+      grid-template-columns: repeat(4, minmax(28px, 1fr));
+    }
+
+    .float-bit {
+      display: grid;
+      height: 40px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: var(--navy);
+      background: white;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 1.2rem;
+      font-weight: 850;
+    }
+
+    .float-point-marker {
+      display: grid;
+      height: 40px;
+      place-items: end center;
+      color: var(--blue);
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 1.65rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .place-point-marker {
+      align-self: end;
+      padding-bottom: 5px;
+    }
+
+    .float-arrow {
+      margin: 14px 0;
+      color: var(--blue);
+      font-size: 1.25rem;
+      font-weight: 900;
+    }
+
+    .hint {
+      min-height: 22px;
+      margin: 17px 0 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      white-space: pre-line;
+    }
+
+    .answer-side {
+      display: flex;
+      padding: 34px 32px;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .mode-pill {
+      align-self: flex-start;
+      margin-bottom: 22px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 0.72rem;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .answer-side label {
+      margin-bottom: 8px;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    #answer {
+      width: 100%;
+      padding: 14px 15px;
+      border: 1.5px solid #c9d2e1;
+      border-radius: 10px;
+      color: var(--ink);
+      background: white;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+
+    #answer:focus {
+      outline: 0;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(53, 103, 214, 0.13);
+    }
+
+    .chart-answer-note {
+      padding: 14px 15px;
+      border: 1px solid #cfd8e7;
+      border-radius: 10px;
+      color: #41516c;
+      background: #f7f9fc;
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    .format-help {
+      min-height: 39px;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.77rem;
+      line-height: 1.45;
+    }
+
+    .button-row {
+      display: flex;
+      margin-top: 12px;
+      gap: 9px;
+    }
+
+    .btn {
+      min-height: 45px;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 10px;
+      font-weight: 800;
+      transition: transform 0.12s, background 0.18s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      flex: 1;
+      color: white;
+      background: var(--blue);
+      box-shadow: 0 8px 18px rgba(53, 103, 214, 0.22);
+    }
+
+    .btn-primary:hover {
+      background: #2859c2;
+    }
+
+    .btn-secondary {
+      color: var(--navy);
+      background: #e9eef6;
+    }
+
+    .feedback {
+      display: none;
+      margin-top: 18px;
+      padding: 13px 14px;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .feedback.correct {
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .feedback.incorrect {
+      color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .progress-row {
+      display: flex;
+      padding: 17px 32px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      border-top: 1px solid var(--line);
+      background: white;
+    }
+
+    .progress-copy {
+      color: var(--muted);
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 7px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #e6ebf3;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--blue));
+      transition: width 0.25s;
+    }
+
+    @media (max-width: 760px) {
+      .header-inner,
+      .workspace-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .score {
+        align-self: flex-start;
+      }
+
+      .workspace-head {
+        padding: 24px 22px;
+      }
+
+      .switch {
+        align-self: flex-start;
+      }
+
+      .quiz-body {
+        grid-template-columns: 1fr;
+      }
+
+      .question-side {
+        min-height: 355px;
+        padding: 32px 18px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .answer-side {
+        padding: 28px 22px;
+      }
+
+      .place-grid {
+        gap: 3px;
+      }
+
+      .arithmetic-workspace {
+        gap: 3px;
+      }
+
+      .masking-workspace {
+        gap: 3px;
+      }
+
+      .float-number {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .place-label {
+        font-size: 0.59rem;
+      }
+
+      .place-bit {
+        font-size: 1.05rem;
+      }
+
+      .progress-row {
+        padding: 15px 22px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .brand p {
+        display: none;
+      }
+
+      .question-value {
+        letter-spacing: 0.03em;
+      }
+
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">10.1</div>
+        <div>
+          <h1>Binary Number Lab</h1>
+          <p>A-level interactive practice</p>
+        </div>
+      </div>
+      <div class="score" aria-live="polite">
+        <span class="score-label">Session score</span>
+        <strong><span id="correct-count">0</span> / <span id="attempt-count">0</span></strong>
+      </div>
+    </div>
+
+    <nav class="tab-bar-wrap" aria-label="Question types">
+      <div class="tab-bar" role="tablist">
+        <button class="tab" id="tab-sign" role="tab" aria-selected="true" aria-controls="quiz-panel" data-mode="sign">Sign &amp; Magnitude</button>
+        <button class="tab" id="tab-fixed" role="tab" aria-selected="false" aria-controls="quiz-panel" data-mode="fixed" tabindex="-1">Fixed Point</button>
+        <button class="tab" id="tab-twos" role="tab" aria-selected="false" aria-controls="quiz-panel" data-mode="twos" tabindex="-1">Two's Complement</button>
+        <button class="tab" id="tab-arithmetic" role="tab" aria-selected="false" aria-controls="quiz-panel" data-mode="arithmetic" tabindex="-1">Add &amp; Subtract</button>
+        <button class="tab" id="tab-normalisation" role="tab" aria-selected="false" aria-controls="quiz-panel" data-mode="normalisation" tabindex="-1">Normalisation</button>
+        <button class="tab" id="tab-masking" role="tab" aria-selected="false" aria-controls="quiz-panel" data-mode="masking" tabindex="-1">Bitwise Masking</button>
+        <button class="tab coming-soon" type="button" disabled aria-disabled="true">More coming soon</button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="workspace" id="quiz-panel" role="tabpanel" aria-labelledby="tab-sign">
+      <div class="workspace-head">
+        <div>
+          <p class="eyebrow" id="eyebrow">8-bit signed binary</p>
+          <h2 id="quiz-title">Sign &amp; Magnitude</h2>
+          <p class="description" id="description">Convert between decimal values and 8-bit sign-and-magnitude binary. The first bit stores the sign: 0 is positive and 1 is negative.</p>
+        </div>
+        <label class="switch" id="place-toggle-wrap">
+          <input id="place-toggle" type="checkbox" checked>
+          <span class="track" aria-hidden="true"></span>
+          Show place values
+        </label>
+        <div class="operation-options" id="operation-options" aria-label="Choose arithmetic question type" hidden>
+          <button class="operation-option" type="button" data-operation="mixed" aria-pressed="true">Mixed</button>
+          <button class="operation-option" type="button" data-operation="addition" aria-pressed="false">Addition only</button>
+          <button class="operation-option" type="button" data-operation="subtraction" aria-pressed="false">Subtraction only</button>
+        </div>
+        <div class="mask-options" id="mask-options" aria-label="Choose bitwise mask type" hidden>
+          <button class="operation-option mask-option" type="button" data-mask="mixed" aria-pressed="true">Mixed</button>
+          <button class="operation-option mask-option" type="button" data-mask="and" aria-pressed="false">AND</button>
+          <button class="operation-option mask-option" type="button" data-mask="or" aria-pressed="false">OR</button>
+          <button class="operation-option mask-option" type="button" data-mask="xor" aria-pressed="false">XOR</button>
+        </div>
+      </div>
+
+      <div class="quiz-body">
+        <div class="question-side">
+          <div class="question-content">
+            <p class="question-label" id="question-label">Convert to 8-bit sign &amp; magnitude</p>
+            <p class="question-text" id="question-text">Represent this decimal value in binary:</p>
+            <div class="question-value" id="question-value">−45</div>
+            <div class="place-grid" id="place-grid" aria-label="Binary place values"></div>
+            <div class="arithmetic-workspace" id="arithmetic-workspace" aria-label="Binary calculation workspace" hidden></div>
+            <div class="normalisation-workspace" id="normalisation-workspace" aria-label="Floating-point normalisation workspace" hidden></div>
+            <div class="masking-workspace" id="masking-workspace" aria-label="Bitwise masking workspace" hidden></div>
+            <p class="hint" id="hint">Remember: the leftmost bit records the sign.</p>
+          </div>
+        </div>
+
+        <div class="answer-side">
+          <div class="mode-pill" id="direction-pill">Decimal → binary</div>
+          <label for="answer" id="answer-label">Your 8-bit answer</label>
+          <input id="answer" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="format-help">
+          <div class="chart-answer-note" id="chart-answer-note" hidden>Enter your answer in the bit boxes in the place-value chart.</div>
+          <p class="format-help" id="format-help">Enter exactly 8 bits. Spaces are optional.</p>
+          <div class="button-row">
+            <button class="btn btn-primary" id="check-button" type="button">Check answer</button>
+            <button class="btn btn-secondary" id="next-button" type="button">Skip</button>
+          </div>
+          <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="progress-row">
+        <span class="progress-copy">Question <strong id="question-number">1</strong> of 10</span>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    "use strict";
+
+    const MODES = {
+      sign: {
+        eyebrow: "8-bit signed binary",
+        title: "Sign & Magnitude",
+        description: "Convert between decimal values and 8-bit sign-and-magnitude binary. The first bit stores the sign: 0 is positive and 1 is negative.",
+        places: ["sign", "64", "32", "16", "8", "4", "2", "1"],
+        showToggle: true
+      },
+      fixed: {
+        eyebrow: "8-bit fractional binary",
+        title: "Fixed-Point Numbers",
+        description: "Represent positive and negative fractional values using 8-bit two's-complement fixed point. The binary point sits after the fifth bit.",
+        places: ["−16", "8", "4", "2", "1", "1/2", "1/4", "1/8"],
+        showToggle: true
+      },
+      twos: {
+        eyebrow: "8-bit signed binary",
+        title: "Two's Complement",
+        description: "Convert between decimal values and their 8-bit two's-complement representations. Questions run in both directions.",
+        places: ["−128", "64", "32", "16", "8", "4", "2", "1"],
+        showToggle: false
+      },
+      arithmetic: {
+        eyebrow: "Unsigned binary arithmetic",
+        title: "Binary Addition & Subtraction",
+        description: "Add and subtract binary values, working with answers of up to 8 bits. Questions use non-negative whole numbers.",
+        places: ["128", "64", "32", "16", "8", "4", "2", "1"],
+        showToggle: false
+      },
+      normalisation: {
+        eyebrow: "12-bit floating point",
+        title: "Normalisation",
+        description: "Normalise floating-point numbers with an 8-bit two's-complement mantissa and a 4-bit two's-complement exponent.",
+        places: [],
+        showToggle: false
+      },
+      masking: {
+        eyebrow: "8-bit logical operations",
+        title: "Bitwise Masking",
+        description: "Apply AND, OR and XOR masks to 8-bit binary values, working on each pair of bits independently.",
+        places: ["128", "64", "32", "16", "8", "4", "2", "1"],
+        showToggle: false
+      }
+    };
+
+    const state = {
+      mode: "sign",
+      arithmeticOperation: "mixed",
+      maskOperation: "mixed",
+      question: null,
+      questionNumber: 1,
+      correct: 0,
+      attempts: 0,
+      answered: false
+    };
+
+    const elements = {
+      panel: document.querySelector("#quiz-panel"),
+      tabs: Array.from(document.querySelectorAll(".tab[data-mode]")),
+      eyebrow: document.querySelector("#eyebrow"),
+      title: document.querySelector("#quiz-title"),
+      description: document.querySelector("#description"),
+      toggleWrap: document.querySelector("#place-toggle-wrap"),
+      toggle: document.querySelector("#place-toggle"),
+      operationOptions: document.querySelector("#operation-options"),
+      operationButtons: Array.from(document.querySelectorAll("#operation-options .operation-option")),
+      maskOptions: document.querySelector("#mask-options"),
+      maskButtons: Array.from(document.querySelectorAll(".mask-option")),
+      questionLabel: document.querySelector("#question-label"),
+      questionText: document.querySelector("#question-text"),
+      questionValue: document.querySelector("#question-value"),
+      placeGrid: document.querySelector("#place-grid"),
+      arithmeticWorkspace: document.querySelector("#arithmetic-workspace"),
+      normalisationWorkspace: document.querySelector("#normalisation-workspace"),
+      maskingWorkspace: document.querySelector("#masking-workspace"),
+      hint: document.querySelector("#hint"),
+      direction: document.querySelector("#direction-pill"),
+      answerLabel: document.querySelector("#answer-label"),
+      answer: document.querySelector("#answer"),
+      chartAnswerNote: document.querySelector("#chart-answer-note"),
+      formatHelp: document.querySelector("#format-help"),
+      check: document.querySelector("#check-button"),
+      next: document.querySelector("#next-button"),
+      feedback: document.querySelector("#feedback"),
+      questionNumber: document.querySelector("#question-number"),
+      progress: document.querySelector("#progress-fill"),
+      correct: document.querySelector("#correct-count"),
+      attempts: document.querySelector("#attempt-count")
+    };
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function toBits(value, width = 8) {
+      return (value >>> 0).toString(2).padStart(width, "0").slice(-width);
+    }
+
+    function signMagnitude(value) {
+      return (value < 0 ? "1" : "0") + toBits(Math.abs(value), 7);
+    }
+
+    function twosComplement(value) {
+      return toBits(value < 0 ? 256 + value : value);
+    }
+
+    function fromTwosComplement(bits) {
+      const unsigned = parseInt(bits, 2);
+      return unsigned >= 128 ? unsigned - 256 : unsigned;
+    }
+
+    function formatDecimal(value) {
+      return String(value).replace("-", "−");
+    }
+
+    function displayBits(bits, fixedPoint = false) {
+      if (!fixedPoint) {
+        return bits;
+      }
+      return bits.slice(0, 5) + '<span class="point">.</span>' + bits.slice(5);
+    }
+
+    function cleanBinary(value) {
+      return value.replace(/[\s._]/g, "");
+    }
+
+    function makeSignQuestion() {
+      const value = randomInt(-127, 127);
+      const decimalToBinary = Math.random() < 0.5;
+      const bits = signMagnitude(value);
+      return {
+        direction: decimalToBinary ? "Decimal → binary" : "Binary → decimal",
+        label: decimalToBinary ? "Convert to 8-bit sign & magnitude" : "Convert from 8-bit sign & magnitude",
+        text: decimalToBinary ? "Represent this decimal value in binary:" : "What decimal value does this represent?",
+        display: decimalToBinary ? formatDecimal(value) : bits,
+        displayBits: decimalToBinary ? null : bits,
+        answer: decimalToBinary ? bits : String(value),
+        answerLabel: decimalToBinary ? "Your 8-bit answer" : "Your decimal answer",
+        help: decimalToBinary ? "Enter one bit in every box in the place-value chart." : "Enter a whole number, using a minus sign if needed.",
+        hint: "Remember: the leftmost bit records the sign.",
+        binaryAnswer: decimalToBinary,
+        explanation: `${formatDecimal(value)} is ${bits} in 8-bit sign and magnitude.`
+      };
+    }
+
+    function makeFixedQuestion() {
+      let eighths = randomInt(-128, 127);
+      if (eighths === 0) {
+        eighths = 102;
+      }
+      const value = eighths / 8;
+      const bits = twosComplement(eighths);
+      const decimalToBinary = Math.random() < 0.65;
+      return {
+        direction: decimalToBinary ? "Decimal → fixed point" : "Fixed point → decimal",
+        label: decimalToBinary ? "Convert to 8-bit fixed point" : "Convert from 8-bit fixed point",
+        text: decimalToBinary ? "Represent this value with three fractional bits:" : "What decimal value does this fixed-point number represent?",
+        display: decimalToBinary ? formatDecimal(value) : bits,
+        displayBits: decimalToBinary ? null : bits,
+        fixedDisplay: !decimalToBinary,
+        answer: decimalToBinary ? bits : String(value),
+        answerLabel: decimalToBinary ? "Your 8-bit fixed-point answer" : "Your decimal answer",
+        help: decimalToBinary ? "Enter one bit in every box. The binary point is shown after bit 5." : "Enter the decimal value, such as -3.25.",
+        hint: "The binary point is fixed between the 1 and 1/2 columns.",
+        binaryAnswer: decimalToBinary,
+        explanation: `${formatDecimal(value)} is ${bits.slice(0, 5)}.${bits.slice(5)} using these fixed-point places.`
+      };
+    }
+
+    function makeTwosQuestion() {
+      let value = randomInt(-128, 127);
+      if (value === 0) {
+        value = -64;
+      }
+      const bits = twosComplement(value);
+      const decimalToBinary = Math.random() < 0.5;
+      return {
+        direction: decimalToBinary ? "Decimal → two's complement" : "Two's complement → decimal",
+        label: decimalToBinary ? "Convert to 8-bit two's complement" : "Convert from 8-bit two's complement",
+        text: decimalToBinary ? "Write this decimal value in two's complement:" : "What signed decimal value does this represent?",
+        display: decimalToBinary ? formatDecimal(value) : bits,
+        displayBits: decimalToBinary ? null : bits,
+        answer: decimalToBinary ? bits : String(fromTwosComplement(bits)),
+        answerLabel: decimalToBinary ? "Your 8-bit answer" : "Your decimal answer",
+        help: decimalToBinary ? "Enter one bit in every box in the place-value chart." : "Remember that an MSB of 1 indicates a negative value.",
+        hint: "For a negative value: write the positive binary, invert the bits, then add 1.",
+        binaryAnswer: decimalToBinary,
+        explanation: `${formatDecimal(value)} is ${bits} in 8-bit two's complement.`
+      };
+    }
+
+    function makeArithmeticQuestion() {
+      const addition = state.arithmeticOperation === "addition"
+        || (state.arithmeticOperation === "mixed" && Math.random() < 0.5);
+      let operands;
+      let result;
+
+      if (addition) {
+        const operandCount = randomInt(2, 3);
+        let remaining = 255;
+        operands = [];
+        for (let index = 0; index < operandCount; index += 1) {
+          const operandsStillNeeded = operandCount - index - 1;
+          const maximum = Math.min(127, remaining - operandsStillNeeded);
+          const operand = randomInt(1, maximum);
+          operands.push(operand);
+          remaining -= operand;
+        }
+        result = operands.reduce((total, operand) => total + operand, 0);
+      } else {
+        const left = randomInt(8, 255);
+        const right = randomInt(1, left);
+        operands = [left, right];
+        result = left - right;
+      }
+
+      const operandsBits = operands.map((operand) => toBits(operand));
+      const answer = toBits(result);
+      const symbol = addition ? "+" : "−";
+
+      return {
+        direction: addition ? "Binary addition" : "Binary subtraction",
+        label: addition ? "Add these binary numbers" : "Subtract these binary numbers",
+        text: "Use the working area to calculate the 8-bit answer:",
+        display: "",
+        answer,
+        answerLabel: "Your binary answer",
+        help: "Enter one bit in every answer box. The carry/borrow row is optional and is not scored.",
+        hint: addition ? "Record carries in the top row if helpful. They are not part of your marked answer." : "Record borrowing in the top row if helpful. It is not part of your marked answer.",
+        binaryAnswer: true,
+        arithmetic: { operandsBits, symbol, addition },
+        explanation: `${operandsBits.join(` ${symbol} `)} = ${answer} (${result} in decimal).`
+      };
+    }
+
+    function makeNormalisationQuestion() {
+      const shift = randomInt(1, 2);
+      const factor = 2 ** shift;
+      const positive = Math.random() < 0.5;
+      const normalMantissa = positive
+        ? randomInt(Math.ceil(64 / factor), Math.floor(127 / factor)) * factor
+        : randomInt(Math.ceil(-128 / factor), Math.floor(-65 / factor)) * factor;
+      const normalExponent = randomInt(-7, 7 - shift);
+      const sourceMantissa = normalMantissa >> shift;
+      const sourceExponent = normalExponent + shift;
+      const normalMantissaBits = toBits(normalMantissa);
+      const normalExponentBits = toBits(normalExponent, 4);
+
+      return {
+        direction: "Unnormalised → normalised",
+        label: "Normalise this floating-point number",
+        text: "Shift the mantissa and adjust the exponent:",
+        display: "",
+        answer: normalMantissaBits + normalExponentBits,
+        answerLabel: "Your normalised floating-point answer",
+        help: "Enter all 8 mantissa bits and all 4 exponent bits.",
+        hint: positive
+          ? "For a positive number, shift until the mantissa begins 01."
+          : "For a negative number, shift until the mantissa begins 10.",
+        binaryAnswer: true,
+        normalisation: {
+          sourceMantissaBits: toBits(sourceMantissa),
+          sourceExponentBits: toBits(sourceExponent, 4),
+          normalMantissaBits,
+          normalExponentBits,
+          shifts: shift
+        },
+        explanation: `The mantissa shifts ${shift} place${shift === 1 ? "" : "s"} left, so the exponent decreases by ${shift}. The normalised answer is ${normalMantissaBits} ${normalExponentBits}.`
+      };
+    }
+
+    function makeMaskingQuestion() {
+      const operations = ["and", "or", "xor"];
+      const operation = state.maskOperation === "mixed"
+        ? operations[randomInt(0, operations.length - 1)]
+        : state.maskOperation;
+      const value = randomInt(0, 255);
+      const mask = randomInt(0, 255);
+      const result = operation === "and"
+        ? value & mask
+        : operation === "or"
+          ? value | mask
+          : value ^ mask;
+      const valueBits = toBits(value);
+      const maskBits = toBits(mask);
+      const resultBits = toBits(result);
+      const label = operation.toUpperCase();
+
+      return {
+        direction: `${label} mask`,
+        label: `Apply the ${label} mask`,
+        text: "Work across the columns and enter the 8-bit result:",
+        display: "",
+        answer: resultBits,
+        answerLabel: `Result of the ${label} mask`,
+        help: "Enter one bit in every box in the result row.",
+        hint: operation === "and"
+          ? "AND produces 1 only when both bits in a column are 1.\nA 1 in the mask keeps the original bit; a 0 clears it."
+          : operation === "or"
+            ? "OR produces 1 when either or both bits in a column are 1.\nA 0 in the mask keeps the original bit; a 1 sets it."
+            : "XOR produces 1 when the two bits in a column are different.\nA 0 in the mask keeps the original bit; a 1 flips it.",
+        binaryAnswer: true,
+        masking: { valueBits, maskBits, operation: label },
+        explanation: `${valueBits} ${label} ${maskBits} = ${resultBits}.`
+      };
+    }
+
+    function makeQuestion() {
+      if (state.mode === "sign") return makeSignQuestion();
+      if (state.mode === "fixed") return makeFixedQuestion();
+      if (state.mode === "twos") return makeTwosQuestion();
+      if (state.mode === "arithmetic") return makeArithmeticQuestion();
+      if (state.mode === "normalisation") return makeNormalisationQuestion();
+      return makeMaskingQuestion();
+    }
+
+    function createBitInput(className, label) {
+      const input = document.createElement("input");
+      input.className = `bit-input ${className}`;
+      input.type = "text";
+      input.inputMode = "numeric";
+      input.maxLength = 1;
+      input.autocomplete = "off";
+      input.setAttribute("aria-label", label);
+      input.addEventListener("input", () => {
+        input.value = input.value.replace(/[^01]/g, "").slice(-1);
+        if (!input.value) return;
+        const selector = input.classList.contains("carry-input") ? ".carry-input" : ".answer-bit";
+        const inputs = Array.from(document.querySelectorAll(selector));
+        const direction = state.mode === "arithmetic" && !input.classList.contains("carry-input") ? -1 : 1;
+        const next = inputs[inputs.indexOf(input) + direction];
+        if (next) next.focus();
+      });
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          checkAnswer();
+          return;
+        }
+        if (event.key === "Backspace" && !input.value) {
+          const selector = input.classList.contains("carry-input") ? ".carry-input" : ".answer-bit";
+          const inputs = Array.from(document.querySelectorAll(selector));
+          const direction = state.mode === "arithmetic" && !input.classList.contains("carry-input") ? 1 : -1;
+          const previous = inputs[inputs.indexOf(input) + direction];
+          if (previous) previous.focus();
+        }
+      });
+      return input;
+    }
+
+    function renderPlaces() {
+      const config = MODES[state.mode];
+      elements.placeGrid.hidden = state.mode === "arithmetic" || state.mode === "normalisation" || state.mode === "masking";
+      elements.placeGrid.classList.toggle("hide-place-values", config.showToggle && !elements.toggle.checked);
+      elements.placeGrid.classList.toggle("fixed-point-grid", state.mode === "fixed");
+      elements.placeGrid.innerHTML = "";
+
+      if (state.mode === "arithmetic" || state.mode === "normalisation" || state.mode === "masking") return;
+
+      const bits = state.question.displayBits || "        ";
+      config.places.forEach((place, index) => {
+        const cell = document.createElement("div");
+        cell.className = "place-cell";
+        const label = document.createElement("span");
+        label.className = "place-label";
+        label.textContent = place;
+        cell.append(label);
+        if (state.question.binaryAnswer) {
+          cell.append(createBitInput("answer-bit", `Answer bit ${index + 1}, ${place} place`));
+        } else {
+          const bit = document.createElement("span");
+          bit.className = "place-bit";
+          bit.textContent = bits[index] || " ";
+          cell.append(bit);
+        }
+        elements.placeGrid.append(cell);
+        if (state.mode === "fixed" && index === 4) {
+          const point = document.createElement("span");
+          point.className = "float-point-marker place-point-marker";
+          point.textContent = ".";
+          point.setAttribute("aria-label", "binary point");
+          elements.placeGrid.append(point);
+        }
+      });
+    }
+
+    function renderArithmetic() {
+      elements.arithmeticWorkspace.innerHTML = "";
+      elements.arithmeticWorkspace.hidden = state.mode !== "arithmetic";
+      if (state.mode !== "arithmetic") return;
+
+      const { operandsBits, symbol, addition } = state.question.arithmetic;
+      const addLabel = (text) => {
+        const label = document.createElement("span");
+        label.className = "arithmetic-label";
+        label.textContent = text;
+        elements.arithmeticWorkspace.append(label);
+      };
+      const addBits = (bits) => {
+        bits.split("").forEach((bit) => {
+          const cell = document.createElement("span");
+          cell.className = "arithmetic-bit";
+          cell.textContent = bit;
+          elements.arithmeticWorkspace.append(cell);
+        });
+      };
+
+      addLabel(addition ? "carry" : "borrow");
+      for (let index = 0; index < 8; index += 1) {
+        elements.arithmeticWorkspace.append(createBitInput("carry-input", `${addition ? "Carry" : "Borrow"} note for column ${index + 1}`));
+      }
+
+      operandsBits.forEach((bits, index) => {
+        const operator = document.createElement("span");
+        operator.className = "arithmetic-symbol";
+        operator.textContent = index === 0 ? "" : symbol;
+        elements.arithmeticWorkspace.append(operator);
+        addBits(bits);
+      });
+
+      const rule = document.createElement("span");
+      rule.className = "arithmetic-rule";
+      rule.style.gridColumn = "1 / -1";
+      elements.arithmeticWorkspace.append(rule);
+
+      addLabel("answer");
+      for (let index = 0; index < 8; index += 1) {
+        const place = MODES.arithmetic.places[index];
+        elements.arithmeticWorkspace.append(createBitInput("arithmetic-answer answer-bit", `Answer bit ${index + 1}, ${place} place`));
+      }
+    }
+
+    function renderNormalisation() {
+      elements.normalisationWorkspace.innerHTML = "";
+      elements.normalisationWorkspace.hidden = state.mode !== "normalisation";
+      if (state.mode !== "normalisation") return;
+
+      const data = state.question.normalisation;
+      const createGroup = (labelText, bits, type, editable) => {
+        const group = document.createElement("div");
+        const label = document.createElement("span");
+        label.className = "float-group-label";
+        label.textContent = labelText;
+        const cells = document.createElement("div");
+        cells.className = `float-bits ${type}`;
+
+        bits.split("").forEach((bit, index) => {
+          if (editable) {
+            cells.append(createBitInput("answer-bit normalisation-answer", `${labelText} bit ${index + 1}`));
+          } else {
+            const cell = document.createElement("span");
+            cell.className = "float-bit";
+            cell.textContent = bit;
+            cells.append(cell);
+          }
+          if (type === "mantissa" && index === 0) {
+            const point = document.createElement("span");
+            point.className = "float-point-marker";
+            point.textContent = ".";
+            point.setAttribute("aria-label", "binary point");
+            cells.append(point);
+          }
+        });
+
+        group.append(label, cells);
+        return group;
+      };
+
+      const given = document.createElement("div");
+      given.className = "float-number";
+      given.append(
+        createGroup("Given mantissa", data.sourceMantissaBits, "mantissa", false),
+        createGroup("Given exponent", data.sourceExponentBits, "exponent", false)
+      );
+
+      const arrow = document.createElement("div");
+      arrow.className = "float-arrow";
+      arrow.textContent = "↓";
+      arrow.setAttribute("aria-hidden", "true");
+
+      const answer = document.createElement("div");
+      answer.className = "float-number";
+      answer.append(
+        createGroup("Normalised mantissa", data.normalMantissaBits, "mantissa", true),
+        createGroup("Adjusted exponent", data.normalExponentBits, "exponent", true)
+      );
+
+      elements.normalisationWorkspace.append(given, arrow, answer);
+    }
+
+    function renderMasking() {
+      elements.maskingWorkspace.innerHTML = "";
+      elements.maskingWorkspace.hidden = state.mode !== "masking";
+      if (state.mode !== "masking") return;
+
+      const { valueBits, maskBits, operation } = state.question.masking;
+      const addBits = (bits) => {
+        bits.split("").forEach((bit) => {
+          const cell = document.createElement("span");
+          cell.className = "arithmetic-bit";
+          cell.textContent = bit;
+          elements.maskingWorkspace.append(cell);
+        });
+      };
+
+      const empty = document.createElement("span");
+      elements.maskingWorkspace.append(empty);
+      addBits(valueBits);
+
+      const operator = document.createElement("span");
+      operator.className = "mask-operator";
+      operator.textContent = operation;
+      elements.maskingWorkspace.append(operator);
+      addBits(maskBits);
+
+      const rule = document.createElement("span");
+      rule.className = "arithmetic-rule";
+      rule.style.gridColumn = "1 / -1";
+      elements.maskingWorkspace.append(rule);
+
+      const answerLabel = document.createElement("span");
+      answerLabel.className = "arithmetic-label";
+      answerLabel.textContent = "result";
+      elements.maskingWorkspace.append(answerLabel);
+      MODES.masking.places.forEach((place, index) => {
+        elements.maskingWorkspace.append(createBitInput("arithmetic-answer answer-bit", `Result bit ${index + 1}, ${place} place`));
+      });
+    }
+
+    function renderQuestion() {
+      state.question = makeQuestion();
+      state.answered = false;
+      elements.questionLabel.textContent = state.question.label;
+      elements.questionText.textContent = state.question.text;
+      elements.questionValue.innerHTML = displayBits(state.question.display, state.question.fixedDisplay);
+      elements.questionValue.hidden = state.mode === "arithmetic" || state.mode === "normalisation" || state.mode === "masking";
+      elements.direction.textContent = state.question.direction;
+      elements.answerLabel.textContent = state.question.answerLabel;
+      elements.formatHelp.textContent = state.question.help;
+      elements.hint.textContent = state.question.hint;
+      elements.answer.value = "";
+      elements.answer.disabled = false;
+      elements.answer.hidden = state.question.binaryAnswer;
+      elements.chartAnswerNote.hidden = !state.question.binaryAnswer;
+      elements.chartAnswerNote.textContent = state.mode === "arithmetic"
+        ? "Enter the answer in the bottom row of the calculation."
+        : state.mode === "normalisation"
+          ? "Enter the normalised mantissa and adjusted exponent in the boxes shown."
+          : state.mode === "masking"
+            ? "Enter the masked result in the bottom row."
+            : "Enter your answer directly in the bit boxes in the place-value chart.";
+      if (state.question.binaryAnswer) {
+        elements.answerLabel.removeAttribute("for");
+      } else {
+        elements.answerLabel.htmlFor = "answer";
+      }
+      elements.check.disabled = false;
+      elements.check.textContent = "Check answer";
+      elements.next.hidden = false;
+      elements.next.textContent = "Skip";
+      elements.feedback.className = "feedback";
+      elements.feedback.textContent = "";
+      elements.questionNumber.textContent = state.questionNumber;
+      elements.progress.style.width = `${(state.questionNumber - 1) * 10}%`;
+      renderPlaces();
+      renderArithmetic();
+      renderNormalisation();
+      renderMasking();
+      const answerBits = Array.from(document.querySelectorAll(".answer-bit"));
+      const firstInput = state.question.binaryAnswer
+        ? (state.mode === "arithmetic" ? answerBits.at(-1) : answerBits[0])
+        : elements.answer;
+      firstInput.focus();
+    }
+
+    function normalizeAnswer(value) {
+      const trimmed = value.trim().replace("−", "-");
+      if (state.question.binaryAnswer) {
+        let binary = cleanBinary(trimmed);
+        if (state.question.allowShortBinary) {
+          binary = binary.replace(/^0+(?=\d)/, "");
+        }
+        return binary;
+      }
+      const number = Number(trimmed);
+      return Number.isFinite(number) ? String(number) : trimmed;
+    }
+
+    function checkAnswer() {
+      if (state.answered) {
+        nextQuestion();
+        return;
+      }
+
+      const answerBits = Array.from(document.querySelectorAll(".answer-bit"));
+      const rawAnswer = state.question.binaryAnswer
+        ? answerBits.map((input) => input.value).join("")
+        : elements.answer.value;
+      const incompleteBinary = state.question.binaryAnswer && answerBits.some((input) => !/^[01]$/.test(input.value));
+      if (!rawAnswer.trim() || incompleteBinary) {
+        elements.feedback.className = "feedback incorrect show";
+        elements.feedback.textContent = state.question.binaryAnswer
+          ? "Enter a 0 or 1 in every answer box before checking."
+          : "Enter an answer before checking.";
+        const firstEmpty = state.mode === "arithmetic"
+          ? [...answerBits].reverse().find((input) => !input.value)
+          : answerBits.find((input) => !input.value);
+        (firstEmpty || elements.answer).focus();
+        return;
+      }
+
+      const given = normalizeAnswer(rawAnswer);
+      const expected = normalizeAnswer(state.question.answer);
+      const validBinary = !state.question.binaryAnswer || /^[01]+$/.test(given);
+      const correct = validBinary && given === expected;
+
+      state.attempts += 1;
+      if (correct) {
+        state.correct += 1;
+        elements.feedback.className = "feedback correct show";
+        elements.feedback.textContent = `Correct! ${state.question.explanation}`;
+      } else {
+        elements.feedback.className = "feedback incorrect show";
+        elements.feedback.textContent = validBinary
+          ? `Not quite. The answer is ${state.question.answer}. ${state.question.explanation}`
+          : "Use only 0s and 1s for a binary answer.";
+      }
+
+      state.answered = true;
+      elements.answer.disabled = true;
+      document.querySelectorAll(".bit-input").forEach((input) => {
+        input.disabled = true;
+      });
+      elements.check.textContent = "Next question";
+      elements.next.hidden = true;
+      elements.correct.textContent = state.correct;
+      elements.attempts.textContent = state.attempts;
+      elements.progress.style.width = `${state.questionNumber * 10}%`;
+    }
+
+    function nextQuestion() {
+      state.questionNumber = state.questionNumber >= 10 ? 1 : state.questionNumber + 1;
+      renderQuestion();
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      state.questionNumber = 1;
+      const config = MODES[mode];
+
+      elements.tabs.forEach((tab) => {
+        const active = tab.dataset.mode === mode;
+        tab.setAttribute("aria-selected", String(active));
+        tab.tabIndex = active ? 0 : -1;
+      });
+
+      const activeTab = elements.tabs.find((tab) => tab.dataset.mode === mode);
+      elements.panel.setAttribute("aria-labelledby", activeTab.id);
+      elements.eyebrow.textContent = config.eyebrow;
+      elements.title.textContent = config.title;
+      elements.description.textContent = config.description;
+      elements.toggleWrap.hidden = !config.showToggle;
+      elements.operationOptions.hidden = mode !== "arithmetic";
+      elements.maskOptions.hidden = mode !== "masking";
+      renderQuestion();
+    }
+
+    elements.tabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => setMode(tab.dataset.mode));
+      tab.addEventListener("keydown", (event) => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        let nextIndex = index;
+        if (event.key === "ArrowRight") nextIndex = (index + 1) % elements.tabs.length;
+        if (event.key === "ArrowLeft") nextIndex = (index - 1 + elements.tabs.length) % elements.tabs.length;
+        if (event.key === "Home") nextIndex = 0;
+        if (event.key === "End") nextIndex = elements.tabs.length - 1;
+        elements.tabs[nextIndex].focus();
+        setMode(elements.tabs[nextIndex].dataset.mode);
+      });
+    });
+
+    elements.toggle.addEventListener("change", () => {
+      elements.placeGrid.classList.toggle("hide-place-values", !elements.toggle.checked);
+    });
+    elements.operationButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        state.arithmeticOperation = button.dataset.operation;
+        elements.operationButtons.forEach((option) => {
+          option.setAttribute("aria-pressed", String(option === button));
+        });
+        state.questionNumber = 1;
+        renderQuestion();
+      });
+    });
+    elements.maskButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        state.maskOperation = button.dataset.mask;
+        elements.maskButtons.forEach((option) => {
+          option.setAttribute("aria-pressed", String(option === button));
+        });
+        state.questionNumber = 1;
+        renderQuestion();
+      });
+    });
+    elements.check.addEventListener("click", checkAnswer);
+    elements.next.addEventListener("click", nextQuestion);
+    elements.answer.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") checkAnswer();
+    });
+
+    renderQuestion();
+  </script>
+</body>
+</html>
